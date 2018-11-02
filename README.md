@@ -7,4 +7,4 @@ Brian Waite, MSDS 6306
 The contents of this repo are files related to the assignment in Week 3.12. You will find: 
 
 * A copy of my data science profile from Week 1 (screenshot)
-* Files from Prof. McGee's stat6306datascience repo.
+* Exploratory Data Analysis NY Times files from Prof. McGee's stat6306datascience repo.
