@@ -1,0 +1,187 @@
+---
+title: "Week 3 Homework Doing Data Science"
+author: "Brian Waite"
+date: "November 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. GitHub Cloning (20 points): 
+
+```{r}
+# cd Documents\GitHub\Testrepo
+# mkdir publicdata
+# cd publicdata
+# git clone https://github.com/caesar0301/awesome-public-datasets
+# cd awesome-public-datasets\Datasets
+```
+
+# 2. Data Summary (20 points): 
+
+### 2.a: Read in titanic.csv
+
+```{r}
+# unzip titanic.csv.zip
+setwd("C:/Users/Brian/Documents/Github/Testrepo/publicdata/awesome-public-datasets/Datasets")
+df = read.csv("titanic.csv")
+```
+
+### 2.b: Output count of females and males aboard the Titanic. Plot the frequency of females and males. 
+
+```{r}
+sexDF = summary(df$Sex)
+print(sexDF)
+barplot(sexDF, ylim = c(0,600), xlab = "Sex", ylab = "Number Onboard", main = "Sex frequency on Titanic")
+```
+
+
+
+### 2.c: Use one apply function to output the means of Age, Fare, and Survival.
+
+```{r}
+lapply(df[,c(2,6,10)], mean, na.rm=TRUE)
+```
+
+# 3. Function Building (30 points)
+
+### Prep step: Load the data in sleep01.csv
+
+```{r}
+sleepdata = read.csv("http://talklab.psy.gla.ac.uk/L1_labs/lab_1/homework/sleep_data_01.csv")
+```
+
+### Build the function for building the report. 
+
+```{r}
+###This function accepts a dataframe in the format of sleep_data_01.csv imported into a dataframe
+###It returns a report of the sleep data consisting of the median age, RSES mean, RSES std. deviation 
+###(all divided by 5) and the range of Duration. 
+
+sleepFunction = function(x) { 
+  medianAge = median(x$Age, na.rm = TRUE)
+  minDuration = min(x$Duration,na.rm = TRUE)
+  maxDuration = max(x$Duration, na.rm = TRUE)
+  meanRSES = mean(x$RSES, na.rm = TRUE)
+  sdRSES = sd(x$RSES, na.rm = TRUE)
+  report = as.data.frame(t(c(medianAge/5,meanRSES/5,sdRSES/5,maxDuration - minDuration)))
+  names(report) = c("MedianAge", "SelfEsteem", "SE_SD", "DurationRange")
+  round(report, 2) #returns report rounded to 2 decimal places at most
+  }
+```
+
+### Run the function using the sleep data provided. 
+
+```{r}
+sleepFunction(sleepdata)
+```
+
+# 4. FiveThirtyEight Data (30 points): 
+
+### a. Install the fivethirtyeight package
+
+```{r}
+#commenting the install code to avoid issues in compiling the knit file
+
+#install.packages("fivethirtyeight")
+
+#load
+library(fivethirtyeight)
+```
+
+### Find the data set name of the 22nd data set
+
+```{r}
+
+#get a list of all sets
+setListing = data(package = "fivethirtyeight")
+#find the 22nd set variable name
+as.name(setListing$results[22,3])
+```
+
+### b. Assign the data identified to a new dataframe df
+
+```{r}
+#assign the dataframe to the identified value. Couldn't get this to take programmatically with as.name, call, eval, etc... Not sure why. 
+df = fivethirtyeight::college_recent_grads
+```
+
+### c. Use a more detailed list of the datasets to print out a URL in a comment to the news story. 
+
+```{r}
+#find the record
+largeSetListing = read.csv("https://goo.gl/OT8iHa") 
+articleURL = as.character(largeSetListing[which(largeSetListing$DATAFRAME_NAME == setListing$results[22,3]),12])
+```
+
+I am really happy to hear from this news story that non-STEM majors can also find ways to make money! 
+
+```{r}
+print(articleURL)
+```
+
+### d. Using R commands, give the dimension and column names of the dataframe
+
+Dimensions of dataframe df: <numrows> <numcols> 
+
+```{r}
+dim(df)
+```
+
+Column names of dataframe df: 
+
+```{r}
+names(df)
+```
+
+#5 Data Summary (30 points): 
+
+### a. Write an R command to get the column names and count the number of columns. 
+
+Again, the column names are: 
+```{r}
+names(df)
+```
+
+And the number of columns is the length of that object: 
+```{r}
+length(names(df))
+```
+
+### b. Generate a count of each unique major_category in data frame with frequency of each. 
+
+```{r}
+major_count = as.data.frame(table(df$major_category))
+names(major_count) = c("Major", "Frequency")
+```
+
+### c. Make a barplot of major_count
+
+```{r}
+par(las=2)
+barplot(major_count$Frequency, names.arg = major_count$Major, col = blues9, horiz = TRUE, xlim = c(0,30), xlab = "Num Occurrences", main = "Frequency of Majors")
+
+title(ylab="Major", line=0, cex.lab=1.0)
+```
+
+### d. Write the fivethirtyeight data to a csv file. Make sure that it does not have row labels.
+
+```{r}
+write.csv(df, "college_recent_grads.csv", row.names = FALSE)
+```
+
+# 6. Codebook (30 points) 
+
+### a. Start a new repository on GitHub for your SMU MSDS homework. (Complete) 
+
+### b. Create a README.md file which explains the purpose of the repository. (Complete) 
+
+### c. In one (or more) of the nested directories, post your RMarkdown script, HTML file, and data from 'fivethirtyeight.' (complete) 
+
+### d. The link to this repository meeting the above requirements is available at: 
+
+https://github.com/Ujustwaite/Testrepo/tree/master/homework
+
+## Homework 3 Complete! 
