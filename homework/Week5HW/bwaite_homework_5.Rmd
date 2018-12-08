@@ -1,0 +1,167 @@
+---
+title: 'MSDS 6306: Homework Week 5'
+author: "Brian Waite"
+date: "December 6, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Questions
+
+## Backstory: 
+
+Your client is expecting a baby soon. However, he is not sure what to name the child.Being out of the loop, he hires you to help him figure out popular names. He provides for you raw data in order to help you make a decision.
+
+## Question 1: Data Munging (30 Points): 
+
+Using yob2016.txt as provided. Make the data tidy and usable. 
+
+#### a. First, import the .txt file into R so you can process it. Keep in mind this is not a CSV file. You might have to open the file to see what you're dealing with. Assign the resulting data frame to an object, df, that consists of three columns with humanreadable column names for each.
+
+Import the file into R: 
+
+```{r}
+##Assumes file is located in present working directory
+
+## Read in the semi-colon separated file
+df = read.csv(file = "yob2016.txt", sep = ";")
+
+## Assign human readable names
+names(df) = c("First Name", "Gender", "Amount of Children 2016")
+
+```
+
+#### b. Display the summary and structure of df
+
+```{r}
+
+#Summary: 
+
+summary(df)
+
+#Structure: 
+
+str(df)
+
+
+```
+
+#### c. Your client tells you that there is a problem with the raw file. One name was entered twice and misspelled. The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y's at the end of the name. Write an R command to figure out which name it is and display it.
+
+```{r}
+
+#Find the mis-spelled name: 
+
+misspelledName = grep("yyy$",df$'First Name', value = TRUE )
+
+#The mis-spelled name is:
+
+print(misspelledName)
+```
+
+#### d. Upon finding the misspelled name, please remove this particular observation, as the client says it's redundant. Save the remaining dataset as an object: y2016
+
+```{r}
+
+#Remove the redundant mis-spelled name observation and save in y2016: 
+
+y2016 = df[which(df$`First Name` != misspelledName),]
+
+```
+
+
+## Question 2. Data Merging (30 points): 
+
+Utilize yob2015.txt for this question. This file is similar to yob2016, but contains names, gender, and total children given that name for the year 2015.
+
+#### a. Like 1a, please import the .txt file into R. Look at the file before you do. You might have to change some options to import it properly. Again, please give the dataframe human-readable column names. Assign the dataframe to y2015.
+
+```{r}
+##Assumes file is located in present working directory
+
+## Read in the comma separated file
+y2015 = read.csv(file = "yob2015.txt", sep = ",")
+
+## Assign human readable names
+names(y2015) = c("First Name", "Gender", "Amount of Children 2015")
+
+```
+
+#### b. Display the last ten rows in the dataframe. Describe something you find interesting about these 10 rows.
+
+```{r}
+
+#display the last 10 rows in the dataframe
+
+tail(y2015,10)
+```
+
+Something interesting: All of the names at the end of the data list are male names. This would indicate the data is already sorted by gender. 
+
+#### c. Merge y2016 and y2015 by your Name column; assign it to final. The client only cares about names that have data for both 2016 and 2015; there should be no NA values in either of your amount of children rows after merging.
+
+```{r}
+final = merge(y2015,y2016, by = c("First Name", "Gender"))
+```
+
+# Question 3. Data Summary (30 points): 
+
+Utilize your data frame object final for this part. 
+
+#### a. Create a new column called "Total" in final that adds the amount of children in 2015 and 2016 together. In those two years combined, how many people were given popular names?
+
+```{r}
+
+# Total the number of children with each name in 2015 and 2016. 
+
+final$Total = final$`Amount of Children 2015` + final$`Amount of Children 2016`
+
+# Find the number of people given popular names in both years. 
+
+sum(final$Total)
+```
+
+#### b. Sort the data by Total. What are the top 10 most popular names?
+
+```{r}
+
+# Sort the data
+
+final = final[order(final$Total, decreasing = TRUE),]
+
+# Show the 10 most popular names
+
+head(final,10)
+```
+
+#### c. The client is expecting a girl! Omit boys and give the top 10 most popular girl's names.
+
+```{r}
+
+# Find the values of final which are girls names and save to another dataframe
+
+girls = final[which(final$Gender == "F"),]
+
+# Display the top ten girls names
+head(girls,10)
+```
+
+#### d. Write these top 10 girl names and their Totals to a CSV file. Leave out the other columns entirely.
+
+```{r}
+# Output the top ten girls names to a csv file
+
+write.csv(girls[1:10,c("First Name","Total")],file = "GirlNames.csv", row.names = FALSE)
+```
+
+Note to the user: The file contains column headers to describe the data contained within. 
+
+# 4. Upload to GitHub: 
+
+Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week). The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files-just make sure you have a description and directions that are helpful for the grader.
+
+This homework, the associated data files, output files, and codebook are available at: https://github.com/Ujustwaite/Testrepo/tree/master/homework/Week5HW
+
