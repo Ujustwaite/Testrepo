@@ -1,0 +1,110 @@
+---
+title: "HW_5_Codebook"
+author: "Brian Waite"
+date: "December 7, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Codebook: Doing Data Science Week 5 Homework
+
+This codebook supports the analysis of the following files: 
+
+yob2015.txt
+yob2016.txt
+
+##Feature Selection (from yob2015.txt and yob2016.txt)
+
+The features in these files are derived from published lists of most popular childrens names in the years 2015 and 2016 respectively. They include the name, gender and number of children receiving those names in the given year as aggregated by the data collector. 
+
+##Variable Listing / Objects Created: 
+
+The variables contained within these files are (for both files) are: 
+
+* First Name
+* Gender
+* Amount of Children 2015: number of Children receiving those names in the year. 
+* Amount of Children 2016: same as above
+
+Additionally calculated variables / created objects are: 
+
+df: An intermediate dataframe objects 
+
+y2015/y2016: dataframe objects containing the values of the imported files after cleaning. 
+
+final: dataframe containing the merged results of y2015 and y2016
+
+Total: A sum of the number of children receiving the names in both 2015 and 2016
+
+sum(Total): A sum total of all the number of children in the study
+
+girls: A dataframe that contains only the names associated with female genders
+
+##R Code for importing and cleaning the data set: 
+
+
+Read in yob2016.txt and yob2015.txt: 
+
+```{r}
+## Read in the semi-colon separated file
+df = read.csv(file = "yob2016.txt", sep = ";")
+
+
+## Read in the comma separated file
+y2015 = read.csv(file = "yob2015.txt", sep = ",")
+```
+
+Assign human readable variable names: 
+
+```{r}
+## Assign human readable names
+names(df) = c("First Name", "Gender", "Amount of Children 2016")
+
+
+## Assign human readable names
+names(y2015) = c("First Name", "Gender", "Amount of Children 2015")
+```
+
+Remove a misspelling: 
+
+```{r}
+
+#Find the mis-spelled name: 
+
+misspelledName = grep("yyy$",df$'First Name', value = TRUE )
+
+#Remove it
+y2016 = df[which(df$`First Name` != misspelledName),]
+```
+
+Now bring together the two tables: 
+
+```{r}
+
+final = merge(y2015,y2016, by = c("First Name", "Gender"))
+```
+
+And create the Total variable: 
+
+```{r}
+final$Total = final$`Amount of Children 2015` + final$`Amount of Children 2016`
+```
+
+Create the girls dataframe: 
+```{r}
+girls = final[which(final$Gender == "F"),]
+```
+
+
+## Table of Tidy Variable Names
+
+Original Name | Cleaned Name
+--------------|-------------
+Not assigned  | First Name
+Not assigned  | Gender
+Not assigned  | Amount of Children 2015/2016
+Not assigned  | Total
+
