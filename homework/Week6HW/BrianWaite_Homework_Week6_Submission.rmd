@@ -1,0 +1,130 @@
+---
+title: "MSDS 6306 Unit 6 Homework"
+author: "Brian Waite"
+date: "December 13, 2018"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Study: Veterans Administration Hospital Review
+
+###1. Mental Health Clinics (40%)
+
+a. Data loaded in accordance with instructions. 
+
+Note: Further execution of this code assumes that the file "N-MHSS-2015-DS0001-data-r.rda" and its associated data was loaded into the global environment "as is". Loading explicitly to enable knit. 
+
+```{r}
+load(file="N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+```
+
+b. List of the State abbreviations without their counts, one abbreviation per State value. 
+
+```{r}
+unique(mh2015_puf$LST)
+```
+
+c. List of Veterans Administration medical centers in the mainland United States. 
+
+```{r}
+
+StateFreq = as.data.frame(table(mh2015_puf$LST), stringsAsFactors = FALSE)
+
+#Trim the white space from the State data
+StateFreq$Var1 = trimws(StateFreq$Var1)
+
+#Remove non-continental US locations
+
+OCONUS = c("HI","AK","VI","GU","AS","PR")
+for (locs in OCONUS) { 
+  StateFreq = StateFreq[which(!StateFreq$Var1 == locs),]
+  }
+
+row.names(StateFreq) = 1:length(StateFreq$Var1)
+names(StateFreq) = c("State", "NumFacs") 
+
+# Display the data frame
+
+knitr::kable(StateFreq)
+
+# Prove this is a data frame
+
+class(StateFreq)
+```
+
+d. Create a ggplot barchart of the filtered data set. 
+
+```{r}
+library(ggplot2)
+ggplot(StateFreq, aes(State, NumFacs, width = .5)) +   
+  geom_bar(aes(fill = State), position = "dodge", stat="identity") + theme(axis.text.y = element_text(size = 5), axis.text.x = element_text(size = 10, angle = 90, hjust = 1)) + ylab("Number of Mental Health Facilities") + ggtitle("Number of Mental Health Facilities Per State")+ theme(plot.title = element_text(hjust = 0.5)) + coord_flip()
+```
+
+### 2. Cleaning and Bringing in New Features (60%)
+
+a. Read in the State Size dataset and try to merge it into the State Frequency dataset above. 
+
+```{r}
+# Read in the dataset provided
+
+StateSize = read.csv("statesize.csv")
+
+# Reset the names of the built dataframe
+
+names(StateFreq) = c("Abbrev", "NumFacs")
+
+# Attempt to merge the dataset
+
+MergedData = merge(StateSize, StateFreq, by = "Abbrev")
+
+head(MergedData)
+
+```
+
+b. Correct the problem with the LST column, then merge the data frames: 
+
+I suspect that the issue I was supposed to have is that the original data set has extra whitespace included in the abbreviation column. Also, you have to make sure to have a shared variable name between the two datasets. 
+Because I addressed both of these issues before merging, it worked fine. I used trimws() above because it was needed for the method that I used to remove the OCONUS locations. Sorry! I foiled your plans! 
+
+c. Calculate a new variable in your combined data.frame() which indicates the VA hospitals per **thousand** square miles. 
+
+```{r}
+
+# Convert the area to ThousandSquareMiles and then Calculate # of Facilities Per Thousand Square Miles
+
+MergedData$FacsPerThousandSqrMiles = MergedData$NumFacs / (MergedData$SqMiles / 1000)
+
+head(MergedData)
+```
+
+d. Create another ggplot which considers the VAs per square thousand miles, rather than just frequency. 
+
+* Make sure the State axis is readable, like before. Change the title and axes as appropriate.
+
+* Modify the ggplot syntax to make your bars in descending order (there are StackOverflow
+topics for this, and I have demonstrated how in Live Coding in prior classes).
+
+* Color-code the bars based on Region (see the merged data.frame)-however, change the
+color scheme from the default. Any set of colors is fine, so long as it is readable.
+
+* Keep the legend-you should have four regions and therefore four colors.
+
+```{r}
+ggplot(MergedData, aes(reorder(Abbrev, FacsPerThousandSqrMiles), FacsPerThousandSqrMiles, width = .5)) +   
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9", "#FF0000")) + 
+  geom_bar(aes(fill = Region), position = "dodge", stat="identity") + theme(axis.text.y = element_text(size = 5), axis.text.x = element_text(size = 10, angle = 90, hjust = 1)) + xlab("State") + ylab("Number of Mental Health Facilities (per Thousand Square Miles)") + ggtitle("Number of Mental Health Facilities by Area / Region")+ theme(plot.title = element_text(hjust = 0.5)) + coord_flip()
+```
+
+e. What patterns do you see? By this metric, is there any region that seems relatively high for VA medical centers per thousand square miles? How about low? Given these data, what advice might you give your boss before you start modeling (and why)?
+
+Given the plot above, it appears that the majority of VA facilities offering Mental Health services (per thousand square miles) is in the Northeast region. The West seems to have a disproportionately low number of facilities offering these services (per thousand square miles). 
+
+Prior to conducting any modeling, because the results are so heavily skewed, we should undertake some effort to gather additional data, limit the scope of our analysis or to normalize the data in some way so that the outliers do not overpower any results that we might find. Perhaps we could look for other parameters -- such as per-capita -- or even more specifically the population of veterans in the regions who would rely on these services. Another piece of information that might be useful is the utilization rate of the facilities in each state. 
+
+If after conducting additional exploratory analysis, we find that these are strong indicators, then we can proceed with our analysis in a more well informed manner. 
