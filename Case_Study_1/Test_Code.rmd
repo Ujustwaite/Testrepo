@@ -175,8 +175,26 @@ Looking at the graph below:
 #Note: Plot drops NA Values
 
 ggplot(MergedBrewing, aes(x=ABV*100, y=IBU)) +
-  geom_point(shape=3) +    # Use hollow circles
+  geom_point(shape=3) +
+  #geom_density2d() + 
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_continuous(low="lavenderblush", high="purple") +
   geom_smooth(method=lm) + xlab("Alcohol By Volume (%)") + ylab("International Bitterness Units (IBU)") + ggtitle("Relationship Between Bitterness and Alcohol By Volume") + theme_minimal()
 ```
 
-It does appear that there is a direct, near linear relationship between the bitterness of a beer and the alcohol content. 
+It does appear that there is a direct, near linear relationship between the bitterness of a beer and the alcohol content. This relationship is very strong for lower values of alcohol by volume. Given that the data have a seemingly linear relationship, we can run a Pearson's Correlation test to determine the significance of this relationship. 
+
+```{r}
+# conduct a Pearson's correlation test on ABV and IBU. Test omits na values by default. 
+test = cor.test(MergedBrewing$ABV,MergedBrewing$IBU)
+print(test)
+SharedVariance = (test$estimate^2) * 100
+print(as.numeric(SharedVariance[1]))
+
+```
+
+As we can see from above, the correlation between ABV and IBU is overwhelmingly statistically significant (p < 2.2 x 10^-16^) and has a Pearson's R of 0.671. In other words, the two data sets have a shared variance of 44.97%. 
+
+#### What does this mean? 
+
+Two variables with no correlation would have a Pearson's R of Zero (0). Two variables with direct correlation would have a Pearson's R of 1 (or -1). Our correlation of 0.671 demonstrates that ABV and IBU are strongly correlated, assuming the data meet the assumptions of the Pearson's test. Looking at the data above, we can be confident we have met these assumptions. 
